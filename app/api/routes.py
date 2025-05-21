@@ -1,17 +1,11 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, UploadFile, File, Form
+from fastapi.responses import JSONResponse
 from app.core.parser import parse_requirements
 from app.core.osv import check_osv_vulnerabilities
 from pydantic import BaseModel
 from typing import List, Optional
 
 router = APIRouter()
-
-
-# 🔹 Request schema
-class ApplicationInput(BaseModel):
-    name: str
-    description: Optional[str] = None
-    requirements: str
 
 # 🔹 Response schema
 class DependencyVulnerability(BaseModel):
@@ -20,25 +14,33 @@ class DependencyVulnerability(BaseModel):
     vulnerabilities: List[dict]
     error: Optional[str] = None
 
-
 class ApplicationResponse(BaseModel):
     application: str
     dependencies_checked: List[DependencyVulnerability]
     ignored_dependencies: List[str]
 
 
-# 🔹 Route: Create application
 @router.post("/applications/", response_model=ApplicationResponse)
-async def create_application(app_data: ApplicationInput):
-    valid_deps, ignored_deps = parse_requirements(app_data.requirements)
+async def create_application(
+    name: str = Form(...),
+    description: Optional[str] = Form(None),
+    requirements_file: UploadFile = File(...)
+):
+    if not requirements_file.filename.endswith(".txt"):
+        raise HTTPException(status_code=400, detail="Only .txt files are accepted")
+
+    content = await requirements_file.read()
+    requirements = content.decode()
+
+    valid_deps, ignored_deps = parse_requirements(requirements)
 
     results = []
-    for name, version in valid_deps:
-        result = check_osv_vulnerabilities(name, version)
-        results.append(result)
+    for dep_name, dep_version in valid_deps:
+        vuln_data = check_osv_vulnerabilities(dep_name, dep_version)
+        results.append(DependencyVulnerability(**vuln_data))
 
-    return {
-        "application": app_data.name,
-        "dependencies_checked": results,
-        "ignored_dependencies": ignored_deps,
-    }
+    return ApplicationResponse(
+        application=name,
+        dependencies_checked=results,
+        ignored_dependencies=ignored_deps
+    )
