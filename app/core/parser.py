@@ -1,13 +1,15 @@
+import config
 from packaging.requirements import Requirement
 
-def parse_requirements(requirements_str: str):
+
+def parse_requirements(requirements: str) -> tuple:
     """
     Parse requirements.txt content and returns a list of tuples
     Skiped dependencies are added to the ignored list
     """
     valid = []
     ignored = []
-    for line in requirements_str.strip().splitlines():
+    for line in requirements.strip().splitlines():
         line = line.strip()
         if not line or line.startswith("#"):
             continue

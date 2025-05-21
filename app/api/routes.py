@@ -5,8 +5,6 @@ from pydantic import BaseModel
 from typing import List, Optional
 
 router = APIRouter()
-
-
 # 🔹 Request schema
 class ApplicationInput(BaseModel):
     name: str
@@ -26,19 +24,22 @@ class ApplicationResponse(BaseModel):
     dependencies_checked: List[DependencyVulnerability]
     ignored_dependencies: List[str]
 
+@router.post("/applications/")
+async def create_application(app_data: dict):
+    requirements = app_data.get("requirements", "")
+    valid_deps, ignored_deps = parse_requirements(requirements)
 
-# 🔹 Route: Create application
-@router.post("/applications/", response_model=ApplicationResponse)
-async def create_application(app_data: ApplicationInput):
-    valid_deps, ignored_deps = parse_requirements(app_data.requirements)
-
+    if not app_data:
+        raise HTTPException(status_code=400, detail="No data provided")
+    
     results = []
     for name, version in valid_deps:
+        # Check for vulnerabilities using the OSV API
         result = check_osv_vulnerabilities(name, version)
         results.append(result)
 
     return {
-        "application": app_data.name,
+        "application": app_data["name"],
         "dependencies_checked": results,
-        "ignored_dependencies": ignored_deps,
+        "ignored_dependencies": ignored_deps
     }
