@@ -35,7 +35,7 @@ async def create_application(
 
     valid_deps, ignored_deps = parse_requirements(requirements)
 
-    # 🔄 Run OSV checks concurrently
+    # Run OSV checks concurrently
     tasks = [
         check_osv_vulnerabilities(dep_name, dep_version)
         for dep_name, dep_version in valid_deps
