@@ -18,8 +18,8 @@ This project is a FastAPI-based web API that checks Python dependencies for know
 - [FastAPI](https://fastapi.tiangolo.com/) – high-performance web framework.
 - [Pydantic](https://docs.pydantic.dev/) – data validation and settings management.
 - [Uvicorn](https://www.uvicorn.org/) – ASGI server for running the FastAPI app.
-- [OSV](https://osv.dev/) -  fetch vulnerability data for dependencies.
-- [Redis](https://www.redis.io/) - (**In development**) Currently using an in-memory LRU cache for OSV results, with plans to implement a more robust caching layer
+- [OSV](https://osv.dev/) - fetch vulnerability data for dependencies.
+- [Redis](https://www.redis.io/) – in-memory cache for fast data storage.
 ---
 
 # API Endpoint
@@ -39,7 +39,7 @@ Accepts the following form data:
 1. **Clone the repository**:
 
    ```bash
-   git clone https://github.com/your-username/vulnerable-tracker-api.git
+   git clone https://github.com/dancinoman/vulnerable-tracker-api.git
    cd vulnerable-tracker-api
    ```
 2. **Create a virtual environment**:
@@ -55,7 +55,11 @@ Accepts the following form data:
     ```bash
     uvicorn app.main:app --reload
     ```
-5. **Curl test**:
+5. **Run Redis with Docker if not installed locally**:
+    ```bash
+    docker run -d -p 6379:6379 redis
+    ```
+6. **Curl test**:
     ```bash
     curl -X POST "http://localhost:8000/applications/" \
     -H "accept: application/json" \
