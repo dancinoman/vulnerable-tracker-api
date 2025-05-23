@@ -39,7 +39,7 @@ Accepts the following form data:
 1. **Clone the repository**:
 
    ```bash
-   git clone https://github.com/your-username/vulnerable-tracker-api.git
+   git clone https://github.com/dancinoman/vulnerable-tracker-api.git
    cd vulnerable-tracker-api
    ```
 2. **Create a virtual environment**:
