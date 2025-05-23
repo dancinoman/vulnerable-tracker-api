@@ -8,13 +8,14 @@ import asyncio
 
 router = APIRouter()
 
-# 🔹 Response schema
+# Response schema
 class DependencyVulnerability(BaseModel):
     name: str
     version: str
     vulnerabilities: List[dict]
     error: Optional[str] = None
 
+# Application schema 
 class ApplicationResponse(BaseModel):
     application: str
     dependencies_checked: List[DependencyVulnerability]
@@ -27,20 +28,24 @@ async def create_application(
     description: Optional[str] = Form(None),
     requirements_file: UploadFile = File(...)
 ):
+    # Check for file format requirement
     if not requirements_file.filename.endswith(".txt"):
         raise HTTPException(status_code=400, detail="Only .txt files are accepted")
 
     content = await requirements_file.read()
     requirements = content.decode()
 
+    # Parse the requirement to filter the content
     valid_deps, ignored_deps = parse_requirements(requirements)
 
-    # Run OSV checks concurrently
+    # Run OSV checks for vulnerabilities result
     tasks = [
         check_osv_vulnerabilities(dep_name, dep_version)
         for dep_name, dep_version in valid_deps
     ]
+
     results_raw = await asyncio.gather(*tasks)
+    # Pass through Pydantic model for validation
     results = [DependencyVulnerability(**r) for r in results_raw]
 
     return ApplicationResponse(

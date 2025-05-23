@@ -4,6 +4,11 @@ from app.api.cache import get_cached_vulns, set_cached_vulns
 OSV_API_URL = "https://api.osv.dev/v1/query"
 
 async def check_osv_vulnerabilities(package_name: str, version: str) -> dict:
+    """
+    Prioritize cache to optimize performance.
+    If there is no cache then a request is sent
+    Returns a dict of vulnerability data
+    """
     # Attempt to get cache first
     cached = await get_cached_vulns(package_name, version)
     if cached:

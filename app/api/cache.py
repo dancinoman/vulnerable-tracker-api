@@ -1,6 +1,8 @@
 import json
 from app.core.redis_client import redis_client
 
+# Operations for cache.
+
 def _make_cache_key(package: str, version: str) -> str:
     return f"osv:{package}:{version}"
 
