@@ -4,6 +4,7 @@ from app.core.parser import parse_requirements
 from app.core.osv import check_osv_vulnerabilities
 from pydantic import BaseModel
 from typing import List, Optional
+import asyncio
 
 router = APIRouter()
 
@@ -34,10 +35,13 @@ async def create_application(
 
     valid_deps, ignored_deps = parse_requirements(requirements)
 
-    results = []
-    for dep_name, dep_version in valid_deps:
-        vuln_data = check_osv_vulnerabilities(dep_name, dep_version)
-        results.append(DependencyVulnerability(**vuln_data))
+    # Run OSV checks concurrently
+    tasks = [
+        check_osv_vulnerabilities(dep_name, dep_version)
+        for dep_name, dep_version in valid_deps
+    ]
+    results_raw = await asyncio.gather(*tasks)
+    results = [DependencyVulnerability(**r) for r in results_raw]
 
     return ApplicationResponse(
         application=name,
