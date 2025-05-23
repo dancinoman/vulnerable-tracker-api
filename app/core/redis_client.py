@@ -1,9 +1,9 @@
 import redis.asyncio as redis
 
-# Singleton Redis connection
+# Settings for Redis connection.
 redis_client = redis.Redis(
-    host="localhost",  # or your Docker host/IP
+    host="localhost",  
     port=6379,
     db=0,
-    decode_responses=True  # If storing JSON/text
+    decode_responses=True 
 )

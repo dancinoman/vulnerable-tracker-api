@@ -1,15 +1,16 @@
 import config
 from fastapi import FastAPI
 
-# Project imports
+# Project imports.
 from .api.routes import router
 from app.core.redis_client import redis_client
 
+# Clean shut down.
 async def lifespan(app: FastAPI):
     yield
     await redis_client.aclose()
 
-# Create FastAPI app
+# Create FastAPI app.
 app = FastAPI(
     title=config.APP_NAME,
     version=config.VERSION,
